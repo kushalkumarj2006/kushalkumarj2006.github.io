@@ -44,6 +44,9 @@
       scroll-behavior: smooth;
       scroll-padding-top: 90px;
       -webkit-text-size-adjust: 100%;
+      /* ADDED: Prevent horizontal scrolling globally */
+      max-width: 100vw;
+      overflow-x: hidden; 
     }
 
     body {
@@ -52,8 +55,8 @@
       color: var(--text);
       font-family: var(--sans);
       line-height: 1.6;
-      overflow-x: hidden;
-      overflow-x: clip; /* clip = doesn't break position:sticky */
+      /* CHANGED: Use clip instead of hidden for sticky compatibility */
+      overflow-x: clip; 
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
@@ -93,8 +96,9 @@
       opacity: .11;
       pointer-events: none;
     }
-    .ambient-one { background: #00bcd4; top: 80px; right: -220px; }
-    .ambient-two { background: #006e8a; top: 1250px; left: -300px; }
+    /* FIXED: Use transform instead of negative right/left so it doesn't expand the page width */
+    .ambient-one { background: #00bcd4; top: 80px; right: 0; transform: translateX(50%); }
+    .ambient-two { background: #006e8a; top: 1250px; left: 0; transform: translateX(-50%); }
 
     /* ============================================================
        LAYOUT PRIMITIVES
@@ -103,6 +107,7 @@
       width: min(1160px, 100% - clamp(36px, 5vw, 64px));
       margin-inline: auto;
       padding-inline: 0;
+      max-width: 100%;
     }
 
     .section-label {
@@ -112,6 +117,7 @@
       font: 9px var(--mono);
       letter-spacing: 1.3px;
       color: #81929a;
+      flex-wrap: wrap; /* ADDED: Prevents long labels from forcing width */
     }
     .section-label > span:first-child { color: var(--cyan); white-space: nowrap; }
     .label-rule {
@@ -350,6 +356,7 @@
 
     .core-card {
       width: min(390px, 90%);
+      max-width: 100%;
       background: linear-gradient(145deg, #101b22, #0b1116);
       border: 1px solid rgba(0, 217, 245, .3);
       box-shadow:
@@ -1440,7 +1447,6 @@
           });
         });
 
-        // Close on Escape
         document.addEventListener("keydown", function (e) {
           if (e.key === "Escape" && nav.classList.contains("open")) {
             nav.classList.remove("open");
@@ -1449,7 +1455,6 @@
           }
         });
 
-        // Close on outside click
         document.addEventListener("click", function (e) {
           if (!nav.classList.contains("open")) return;
           if (nav.contains(e.target) || menuToggle.contains(e.target)) return;
@@ -1462,7 +1467,7 @@
       var yearEl = document.getElementById("year");
       if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-      /* ---------- Reveal on scroll (with graceful fallback) ---------- */
+      /* ---------- Reveal on scroll ---------- */
       var revealEls = document.querySelectorAll(".reveal");
 
       if ("IntersectionObserver" in window) {
@@ -1480,11 +1485,9 @@
           );
           revealEls.forEach(function (el) { observer.observe(el); });
         } catch (err) {
-          // Fallback: reveal everything
           revealEls.forEach(function (el) { el.classList.add("visible"); });
         }
       } else {
-        // No IntersectionObserver support — reveal everything
         revealEls.forEach(function (el) { el.classList.add("visible"); });
       }
 
@@ -1511,7 +1514,7 @@
         sections.forEach(function (s) { navObserver.observe(s); });
       }
 
-      /* ---------- GitHub chart fallback (in case error fired before listener) ---------- */
+      /* ---------- GitHub chart fallback ---------- */
       var chartImg = document.querySelector(".gh-chart img");
       if (chartImg) {
         chartImg.addEventListener("error", function () {
